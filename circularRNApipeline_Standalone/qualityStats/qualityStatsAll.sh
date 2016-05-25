@@ -35,22 +35,26 @@ do
   
 
   sh qualityStatsSingleSample.sh $READ_FILE $SAMPLE_ID $PAR_DIR $DATASET_NAME $REPORTDIR_NAME ${OUT_DIR} ${NTRIM} ${JUNCTION_ID_SUFFIX} &
+  jobnumberaa=$!
   echo "Launched qualityStatsSingleSample.sh into the background "`date`
-  run_count=`ps -ealf | grep qualityStatsSingleSample.sh | grep ${USER} | grep -v grep | wc -l`
-  while [ "$run_count" -gt 5 ]
-  do
-    sleep 1
-    run_count=`ps -ealf | grep qualityStatsSingleSample.sh | grep ${USER} | grep -v grep | wc -l`
-  done
+  echo "waiting for qualityStatsSingleSample.sh job $jobnumberaa"
+  wait $jobnumberaa
+
+  # run_count=`ps -ealf | grep qualityStatsSingleSample.sh | grep ${USER} | grep -v grep | wc -l`
+  # while [ "$run_count" -gt 5 ]
+  # do
+  #   sleep 1
+  #   run_count=`ps -ealf | grep qualityStatsSingleSample.sh | grep ${USER} | grep -v grep | wc -l`
+  # done
 done
 
 # Wait until finished
-echo 'Done looping over qualityStatsSingleSample, awaiting the last few qualityStatsSingleSample.sh to finish '`date`
-while [ "$run_count" -gt 0 ]
-do
-  sleep 1
-  run_count=`ps -ealf | grep qualityStatsSingleSample.sh | grep ${USER} | grep -v grep | wc -l`
-done
+# echo 'Done looping over qualityStatsSingleSample, awaiting the last few qualityStatsSingleSample.sh to finish '`date`
+# while [ "$run_count" -gt 0 ]
+# do
+#   sleep 1
+#   run_count=`ps -ealf | grep qualityStatsSingleSample.sh | grep ${USER} | grep -v grep | wc -l`
+# done
 
 # cat all of those files then delete the original separate files
 sh qualityStatsCat.sh ${OUT_DIR}

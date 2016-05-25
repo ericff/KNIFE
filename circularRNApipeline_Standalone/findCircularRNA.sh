@@ -149,27 +149,30 @@ then
     if [[ $MODE = *unaligned* ]]
     then
       ../analysis/align.sh $READ_FILE $SAMPLE_ID $ALIGN_PARDIR $DATASET_NAME $MODE denovo_${DATASET_NAME}_${DENOVOCIRC} denovo denovo_${DATASET_NAME}_onlycircles${DENOVOCIRC}.fa &
-      echo "Launched align into the background "`date`
+      jobnumber1=$!
+      echo "Launched align into the background but waiting"`date`
+      echo "waiting for job $jobnumber1"
+      wait $jobnumber1
     else
       ../analysis/align.sh $READ_FILE $SAMPLE_ID $ALIGN_PARDIR $DATASET_NAME $MODE ${bt_prefix}_genome genome ${bt_prefix}_genome.fa &
+      jobnumber2=$!
       ../analysis/align.sh $READ_FILE $SAMPLE_ID $ALIGN_PARDIR $DATASET_NAME $MODE ${bt_prefix}_ribosomal ribo ${bt_prefix}_ribosomal.fa &
-      echo "Launched 2 align.sh's into the background "`date`
+      jobnumber3=$!
+      echo "Launched 2 align.sh's into the background but waiting"`date`
+      echo "waiting for job $jobnumber2"
+      wait $jobnumber2
+      echo "waiting for job $jobnumber3"
+      wait $jobnumber3
     fi
-    run_count=`ps -ealf | grep align.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
-    while [ "$run_count" -gt 3 ]
-    do
-      sleep 1
-      run_count=`ps -ealf | grep align.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
-    done
   done
     
   # Wait until finished
-  echo 'Done looping over bowtie, awaiting the last few align.sh to finish '`date`
-  while [ "$run_count" -gt 0 ]
-  do
-     sleep 1
-     run_count=`ps -ealf | grep align.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
-  done
+  echo 'Done looping over bowtie '`date`
+  # while [ "$run_count" -gt 0 ]
+  # do
+  #    sleep 1
+  #    run_count=`ps -ealf | grep align.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
+  # done
   echo 'All non-junction align.sh are done'`date`
 
   # now do alignments for the junction indices, calling 1 at a time but using multiple processors to speed it up
@@ -181,16 +184,22 @@ then
       READ_FILE=`awk 'FNR == '${i}' {print $1}' $TASK_DATA_FILE`
       SAMPLE_ID=`awk 'FNR == '${i}' {print $2}' $TASK_DATA_FILE`
       ../analysis/align.sh $READ_FILE $SAMPLE_ID $ALIGN_PARDIR $DATASET_NAME $MODE ${bt_prefix}_junctions_scrambled junction ${bt_prefix}_junctions_scrambled.fa &
+      jobnumber5=$!
       ../analysis/align.sh $READ_FILE $SAMPLE_ID $ALIGN_PARDIR $DATASET_NAME $MODE ${bt_prefix}_junctions_reg reg ${bt_prefix}_junctions_reg.fa &
+      jobnumber6=$!
       echo "Launched 2 junction aligns into the background "`date`
-      
+      echo "waiting for job $jobnumber5"
+      wait $jobnumber5
+      echo "waiting for job $jobnumber6"
+      wait $jobnumber6
+
       # only want to launch for 1 sample at a time and then wait for completion so we don't overwhelm the server
-      run_count=`ps -ealf | grep align.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
-      while [ "$run_count" -gt 0 ]
-      do
-        sleep 1
-        run_count=`ps -ealf | grep align.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
-      done
+      # run_count=`ps -ealf | grep align.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
+      # while [ "$run_count" -gt 0 ]
+      # do
+      #   sleep 1
+      #   run_count=`ps -ealf | grep align.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
+      # done
     done
     echo 'All junction align.sh are done'`date`
   fi
@@ -205,22 +214,26 @@ do
   SAMPLE_ID=`awk 'FNR == '${i}' {print $2}' $TASK_DATA_FILE`
   echo "analysis/preprocessAlignedReads.sh ${SAMPLE_ID} ${ALIGN_PARDIR} ${DATASET_NAME} ${JUNCTION_MIDPOINT} ${OVERLAP} ${JUNCTION_DIR_SUFFIX}"
   analysis/preprocessAlignedReads.sh ${SAMPLE_ID} ${ALIGN_PARDIR} ${DATASET_NAME} ${JUNCTION_MIDPOINT} ${OVERLAP} ${JUNCTION_DIR_SUFFIX} &
+  jobnumberaa=$!
   echo "Launched preprocessAlignedReads.sh into the background "`date`
-  run_count=`ps -ealf | grep preprocessAlignedReads.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
-  while [ "$run_count" -gt 3 ]
-  do
-    sleep 1
-    run_count=`ps -ealf | grep preprocessAlignedReads.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
-  done
+  echo "waiting for job $jobnumberaa"
+  wait $jobnumberaa
+
+  # run_count=`ps -ealf | grep preprocessAlignedReads.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
+  # while [ "$run_count" -gt 3 ]
+  # do
+  #   sleep 1
+  #   run_count=`ps -ealf | grep preprocessAlignedReads.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
+  # done
 done
 
 # Wait until finished
-echo 'Done looping over preprocessing, awaiting the last few preprocessAlignedReads.sh to finish '`date`
-while [ "$run_count" -gt 0 ]
-do
-  sleep 1
-  run_count=`ps -ealf | grep preprocessAlignedReads.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
-done
+# echo 'Done looping over preprocessing, awaiting the last few preprocessAlignedReads.sh to finish '`date`
+# while [ "$run_count" -gt 0 ]
+# do
+#   sleep 1
+#   run_count=`ps -ealf | grep preprocessAlignedReads.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
+# done
 
 # was having some I/O issues where output files weren't written even though preprocessAlignedReads.sh was complete, but did get written a few minutes later
 # so just taking a little pause here to make sure the files get output before moving on
@@ -232,21 +245,25 @@ do
   SAMPLE_ID=`awk 'FNR == '${i}' {print $2}' $TASK_DATA_FILE`
   echo "analysis/filterFDR.sh ${MODE} ${SAMPLE_ID} ${ALIGN_PARDIR} ${DATASET_NAME} ${REPORTDIR_NAME} ${READ_STYLE} ${OVERLAP} ${JUNCTION_DIR_SUFFIX} ${RD1_THRESH} ${RD2_THRESH}"
   analysis/filterFDR.sh ${MODE} ${SAMPLE_ID} ${ALIGN_PARDIR} ${DATASET_NAME} ${REPORTDIR_NAME} ${READ_STYLE} ${OVERLAP} ${JUNCTION_DIR_SUFFIX} ${RD1_THRESH} ${RD2_THRESH} &
+  jobnumberbb=$!
+
   echo "Launched filterFDR.sh into the background "`date`
-  run_count=`ps -ealf | grep filterFDR.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
-  while [ "$run_count" -gt 3 ]
-  do
-    sleep 1
-    run_count=`ps -ealf | grep filterFDR.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
-  done
+  echo "waiting for filterFDR.sh job $jobnumberbb"
+  wait $jobnumberbb
+  # run_count=`ps -ealf | grep filterFDR.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
+  # while [ "$run_count" -gt 3 ]
+  # do
+    # sleep 1
+    # run_count=`ps -ealf | grep filterFDR.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
+  # done
 done
 
 # Wait until finished
-echo 'Done looping over filterFDR, awaiting the last few filterFDR.sh to finish '`date`
-while [ "$run_count" -gt 0 ]
-do
-  sleep 1
-  run_count=`ps -ealf | grep filterFDR.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
-done
+# echo 'Done looping over filterFDR, awaiting the last few filterFDR.sh to finish '`date`
+# while [ "$run_count" -gt 0 ]
+# do
+#   sleep 1
+#   run_count=`ps -ealf | grep filterFDR.sh | grep ${USER} | grep ${DATASET_NAME} | grep -v grep | wc -l`
+# done
 
 echo 'Completed 1 call to findCircularRNA.sh '`date`
