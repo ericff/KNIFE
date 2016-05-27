@@ -1,7 +1,8 @@
 # python2.7 callknife.py 
+import re, os, glob, subprocess
 
  
-
+WORK_DIR = os.getcwd()
 #########################################################################
 # PARAMETERS, I.E. INPUTS TO KNIFE CALL; need to add these here
 #########################################################################
@@ -34,18 +35,15 @@ logstdout_from_knife = "logofstdoutfromknife"
 # End of parameters
 #########################################################################
  
-import re, os, glob, subprocess
-
 # first have to create directories (if they don't already exist)
 #   and change file names and mv them to the right directories
 
 # get current working dir
 
-wdir = os.getcwd()
-logfile = wdir + "/logknife3" + run_id + ".txt"
+logfile = WORK_DIR + "/logknife3" + run_id + ".txt"
 
 with open(logfile, 'w') as ff:
-    ff.write(wdir)
+    ff.write(WORK_DIR)
     ff.write('\n\n\n')
 
     
@@ -93,7 +91,7 @@ def move_and_rename(prefix, targetdir):
     matching_files = glob.glob(globpattern)
     if (len(matching_files)>= 1):
         for thisfile in matching_files:
-            fullpatholdfile = wdir + "/" + thisfile
+            fullpatholdfile = WORK_DIR + "/" + thisfile
             fullpathnewfile = targetdir + "/" + re.sub(pattern=prefix, repl="", string= thisfile)
             subprocess.check_call(["mv", fullpatholdfile, fullpathnewfile])
             with open(logfile, 'a') as ff:
@@ -123,9 +121,9 @@ try:
     with open(logfile, 'a') as ff:
         ff.write('\n\n\n')
         # changing so as to remove calls to perl:
-        subprocess.check_call("sh completeRun.sh " + wdir + " " + read_id_style + " " + wdir + " " + dataset_name + " " + str(junction_overlap) + " " + mode + " " + report_directory_name + " " + str(ntrim) + " 2>&1 | tee " + logstdout_from_knife , stdout = ff, shell=True)
+        subprocess.check_call("sh completeRun.sh " + WORK_DIR + " " + read_id_style + " " + WORK_DIR + " " + dataset_name + " " + str(junction_overlap) + " " + mode + " " + report_directory_name + " " + str(ntrim) + " 2>&1 | tee " + logstdout_from_knife , stdout = ff, shell=True)
         # original test call:
-        # subprocess.check_call("sh completeRun.sh " + wdir + " complete " + wdir + " testData 8 phred64 circReads 40 2>&1 | tee outknifelog.txt", stdout = ff, shell=True)
+        # subprocess.check_call("sh completeRun.sh " + WORK_DIR + " complete " + WORK_DIR + " testData 8 phred64 circReads 40 2>&1 | tee outknifelog.txt", stdout = ff, shell=True)
 except:
     with open(logfile, 'a') as ff:
         ff.write('Error in running completeRun.sh')
@@ -143,20 +141,20 @@ except:
 # with no top level folder above them.
 #############################################################################
 
-datadirlocation = wdir + "/" + dataset_name  
+datadirlocation = WORK_DIR + "/" + dataset_name  
 
-# Change to wdir, then get all files in wdir/[dataset_name] folder, tar them.
+# Change to WORK_DIR, then get all files in WORK_DIR/[dataset_name] folder, tar them.
 
 
-os.chdir(wdir)
-try:
-    fullcall = "tar -cvzf " + dataset_name + "knifeoutputfiles" + run_id + ".tar.gz -C " + datadirlocation + " ." 
-    with open(logfile, 'a') as ff:
-        subprocess.check_call(fullcall, stderr=ff, stdout = ff, shell=True)
-except:
-    with open(logfile, 'a') as ff:
-        ff.write("\nError in tarring the knife output files in the " + dataset_name + " directory\n")
-
+#os.chdir(WORK_DIR)
+#try:
+#    fullcall = "tar -cvzf " + dataset_name + "knifeoutputfiles" + run_id + ".tar.gz -C " + datadirlocation + " ." 
+#    with open(logfile, 'a') as ff:
+#        subprocess.check_call(fullcall, stderr=ff, stdout = ff, shell=True)
+#except:
+#    with open(logfile, 'a') as ff:
+#        ff.write("\nError in tarring the knife output files in the " + dataset_name + " directory\n")
+#
 #############################################################################
 # Get two report files and tar and zip them
 #  Technically looks for all files with names ending in .report.txt
@@ -169,8 +167,32 @@ except:
 # Does not include the directory structure when tarring them
 #############################################################################
 
-os.chdir(wdir)
 
+
+###Run MACHETE
+#Nathaniel Watson
+#05-26-2016
+
+CIRCPIPE_DIR = os.path.join(WORK_DIR,report_directory_name,dataset_name)
+CIRCREF = os.path.join(WORKDIR,report_directory_name,"index")
+MACH_OUTPUT_DIR = os.path.join(WORK_DIR,"mach")
+os.mkdir(MACH_OUTPUT_DIR)
+EXONS = os.path.join(WORK_DIR,"HG19exons")
+#REG_INDEL_INDICES = os.path.join(WORK_DIR,"IndelIndices")
+REG_INDEL_INDICES = os.path.join(WORK_DIR,"toyIndelIndices") #test indices for faster runs
+
+MACH_DIR = "/srv/software/machete"
+MACH_RUN_SCRIPT = os.path.join(MACH_DIR,"run.py")
+
+cmd = "python {MACH_RUN_SCRIPT} ----circpipe-dir {CIRCPIPE_DIR} --output-dir {MACH_OUTPUT_DIR} --hg19Exons {EXONS} --reg-indel-indices {REG_INDEL_INDICES} --circref-dir {CIRCREF}".format(CIRCPIPE_DIR=CIRCPIPE_DIR,OUTPUT_DIR=OUTPUT_DIR,EXONS=EXONS,REG_INDEL_INDICES=REG_INDEL_INDICES,CIRCREF=CIRCREF)
+
+popen = subprocess.Popen(cmd,shell=True)
+
+
+
+
+
+os.chdir(WORK_DIR)
 
 file_list = []
 for root, subFolders, files in os.walk("."):
@@ -207,7 +229,7 @@ except:
     with open(logfile, 'a') as ff:
         ff.write("\nProblem with gzipping.\n")
         
-os.chdir(wdir)
+os.chdir(WORK_DIR)
 
 
         
@@ -228,9 +250,9 @@ os.chdir(wdir)
 # 
 #############################################################################
 
-# Change to wdir, then get all TXT files in wdir/[dataset_name] folder, tar them.
+# Change to WORK_DIR, then get all TXT files in WORK_DIR/[dataset_name] folder, tar them.
 
-# os.chdir(wdir)
+# os.chdir(WORK_DIR)
 
 
 # file_list = []
@@ -252,20 +274,10 @@ os.chdir(wdir)
 
 
 # Might want to get these??? Not sure what directory they are actually in, e.g.
-#    maybe in wdir/testData/taskIdFiles/???             
-# os.chdir(wdir)
+#    maybe in WORK_DIR/testData/taskIdFiles/???             
+# os.chdir(WORK_DIR)
 # try:
-#     subprocess.check_call("mv " + wdir + "/taskIdFiles/*.txt" + " " + wdir, shell=True)
+#     subprocess.check_call("mv " + WORK_DIR+ "/taskIdFiles/*.txt" + " " + WORK_DIR, shell=True)
 # except:
 #     with open(logfile, 'a') as ff:
 #         ff.write('Error in moving taskIdFiles txt files.')
-
-
-                        
-     
-
-
-
-
-
-        
