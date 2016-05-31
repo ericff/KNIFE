@@ -29,5 +29,6 @@ do
     CIRC_JUNC_OUT=${REPORT_OUTDIR}/${SAMPLE_ID}_${APPENDED}_circJuncProbs.txt
     echo "./predictJunctions_tableData.r ${CLASS_FILE} ${MODEL_OUT} ${LINEAR_JUNC_OUT} ${CIRC_JUNC_OUT}"
     ./predictJunctions_tableData.r ${CLASS_FILE} ${MODEL_OUT} ${LINEAR_JUNC_OUT} ${CIRC_JUNC_OUT}
+    ./JS_forFindCircularRNA_GLMfix.r ${CLASS_FILE} ${MODEL_OUT}_cdf ${LINEAR_JUNC_OUT}_cdf ${CIRC_JUNC_OUT}_cdf
   fi
 done
