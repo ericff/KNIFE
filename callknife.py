@@ -52,7 +52,7 @@ with open(logfile, 'w') as ff:
 knifedir = "/srv/software/knife/circularRNApipeline_Standalone"
 
 try:                                         
-    subprocess.check_call("cat {knifedir}/findCircularRNA.sh >> {logfile}".format(knifedir=knifedir,logfile=logfile, shell=True)
+    subprocess.check_call("cat {knifedir}/findCircularRNA.sh >> {logfile}".format(knifedir=knifedir,logfile=logfile, shell=True))
 except:
     with open(logfile, 'a') as ff:
         ff.write('Error in writing findCircularRNA.sh\n')
@@ -174,7 +174,7 @@ datadirlocation = WORK_DIR + "/" + dataset_name
 #05-26-2016
 
 CIRCPIPE_DIR = os.path.join(WORK_DIR,report_directory_name,dataset_name)
-CIRCREF = os.path.join(WORKDIR,report_directory_name,"index")
+CIRCREF = os.path.join(WORK_DIR,report_directory_name,"index")
 MACH_OUTPUT_DIR = os.path.join(WORK_DIR,"mach")
 os.mkdir(MACH_OUTPUT_DIR)
 EXONS = os.path.join(WORK_DIR,"HG19exons")
@@ -184,7 +184,7 @@ REG_INDEL_INDICES = os.path.join(WORK_DIR,"toyIndelIndices") #test indices for f
 MACH_DIR = "/srv/software/machete"
 MACH_RUN_SCRIPT = os.path.join(MACH_DIR,"run.py")
 
-cmd = "python {MACH_RUN_SCRIPT} ----circpipe-dir {CIRCPIPE_DIR} --output-dir {MACH_OUTPUT_DIR} --hg19Exons {EXONS} --reg-indel-indices {REG_INDEL_INDICES} --circref-dir {CIRCREF}".format(CIRCPIPE_DIR=CIRCPIPE_DIR,OUTPUT_DIR=OUTPUT_DIR,EXONS=EXONS,REG_INDEL_INDICES=REG_INDEL_INDICES,CIRCREF=CIRCREF)
+cmd = "python {MACH_RUN_SCRIPT} --circpipe-dir {CIRCPIPE_DIR} --output-dir {MACH_OUTPUT_DIR} --hg19Exons {EXONS} --reg-indel-indices {REG_INDEL_INDICES} --circref-dir {CIRCREF}".format(MACH_RUN_SCRIPT=MACH_RUN_SCRIPT,CIRCPIPE_DIR=CIRCPIPE_DIR,OUTPUT_DIR=OUTPUT_DIR,EXONS=EXONS,REG_INDEL_INDICES=REG_INDEL_INDICES,CIRCREF=CIRCREF)
 
 popen = subprocess.Popen(cmd,shell=True)
 
