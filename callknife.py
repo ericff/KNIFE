@@ -51,13 +51,6 @@ with open(logfile, 'w') as ff:
 # knifedir = "~/gl/circularRNApipeline_Standalone"
 knifedir = "/srv/software/knife/circularRNApipeline_Standalone"
 
-try:                                         
-    subprocess.check_call("cat {knifedir}/findCircularRNA.sh >> {logfile}".format(knifedir=knifedir,logfile=logfile, shell=True))
-except:
-    with open(logfile, 'a') as ff:
-        ff.write('Error in writing findCircularRNA.sh\n')
-
-    
     
 targetdir_list = [knifedir + "/index", knifedir + "/index", knifedir + "/denovo_scripts", knifedir + "/denovo_scripts/index"]
     
