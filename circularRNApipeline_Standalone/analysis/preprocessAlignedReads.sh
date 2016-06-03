@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -eu
 
 # Create text files with ids of Ribo-aligned, genome-aligned,
 # junction-overlapped, and reg junction-overlapped reads.

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -eu
 
 # prints out a file that will be used by R code to train GLM
 #  read id, position of alignment, mapping quality, alignment score, number of Ns, length, junction id

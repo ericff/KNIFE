@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -eu
 
 ## This is just a wrapper that passes on the call to predictJunctions_tableData.r to run the
 # GLM analysis. It is not called in unaligned mode.

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -eu
 
 # ./completeRun.sh /srv/gsfs0/projects/salzman/Linda/DEBUG_MISEQ/trimmed complete /srv/gsfs0/projects/salzman/Linda/alignments NUGENpipeline 10 circReads 55
 

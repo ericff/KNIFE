@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 
 # Generates reports on alignment statistics under sampleStats directory.
 

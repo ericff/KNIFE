@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -eu
 
 # store commandline params and look up job info in txt file
 READ_FILE=$1

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 
 # Called after qualityStatsSingleSample.sh has completed to generate an inidividual report
 # per sample. Consolidates all into 2 reports for the entire dataset and deletes the individual

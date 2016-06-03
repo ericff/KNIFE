@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 
 # Sets up required output directory structure for storing unaligned reads and alignment statistics reports.
 # This wrapper manages calling qualityStatsSingleSample on up to 6 samples at a time (to prevent overloading
