@@ -1,4 +1,3 @@
-# python2.7 callknife.py 
 import re, os, glob, subprocess
 
  
@@ -11,7 +10,7 @@ WORK_DIR = os.getcwd()
 dataset_name = "testData"
 
 # run id to identify files in output, should change this each time
-run_id = "nophred64"
+run_id = "a"
 
 mode = "skipDenovo"
 read_id_style= "complete"
@@ -51,6 +50,7 @@ with open(logfile, 'w') as ff:
 # knifedir = "~/gl/circularRNApipeline_Standalone"
 knifedir = "/srv/software/knife/circularRNApipeline_Standalone"
 
+    
     
 targetdir_list = [knifedir + "/index", knifedir + "/index", knifedir + "/denovo_scripts", knifedir + "/denovo_scripts/index"]
     
@@ -114,7 +114,7 @@ try:
     with open(logfile, 'a') as ff:
         ff.write('\n\n\n')
         # changing so as to remove calls to perl:
-        subprocess.check_call("./completeRun.sh " + WORK_DIR + " " + read_id_style + " " + WORK_DIR + " " + dataset_name + " " + str(junction_overlap) + " " + mode + " " + report_directory_name + " " + str(ntrim) + " 2>&1 | tee " + logstdout_from_knife , stdout = ff, shell=True)
+        subprocess.check_call("completeRun.sh " + WORK_DIR + " " + read_id_style + " " + WORK_DIR + " " + dataset_name + " " + str(junction_overlap) + " " + mode + " " + report_directory_name + " " + str(ntrim) + " 2>&1 | tee " + logstdout_from_knife , stdout = ff, shell=True)
         # original test call:
         # subprocess.check_call("sh completeRun.sh " + WORK_DIR + " complete " + WORK_DIR + " testData 8 phred64 circReads 40 2>&1 | tee outknifelog.txt", stdout = ff, shell=True)
 except:
@@ -179,7 +179,7 @@ MACH_RUN_SCRIPT = os.path.join(MACH_DIR,"run.py")
 
 cmd = "python {MACH_RUN_SCRIPT} --circpipe-dir {CIRCPIPE_DIR} --output-dir {MACH_OUTPUT_DIR} --hg19Exons {EXONS} --reg-indel-indices {REG_INDEL_INDICES} --circref-dir {CIRCREF}".format(MACH_RUN_SCRIPT=MACH_RUN_SCRIPT,CIRCPIPE_DIR=CIRCPIPE_DIR,MACH_OUTPUT_DIR=MACH_OUTPUT_DIR,EXONS=EXONS,REG_INDEL_INDICES=REG_INDEL_INDICES,CIRCREF=CIRCREF)
 
-subprocess.check_call(cmd,shell=True)
+popen = subprocess.check_call(cmd,shell=True)
 
 
 
@@ -225,52 +225,20 @@ except:
 os.chdir(WORK_DIR)
 
 
-        
-#############################################################################
-# OLD:
-# tar all .txt files ONLY in data set folder (but not Swapped files)  and
-#    its subdirectories and tar them
-# ONLY TXT files
-# do this by recursively looking for names of all text files, put those names
-#  in file called tarlist in working directory, then use -T flag for tar
-#
-# It WILL output them with the directory structure, including a top level folder
-#   with the name of the aata set, e.g. these:
-# -rw-r--r--  0 root   root      454 May 22 00:43 testData/sampleStats/SampleAlignStats.txt
-# -rw-r--r--  0 root   root      216 May 22 00:43 testData/sampleStats/SampleCircStats.txt
-# -rw-r--r--  0 root   root 559959411 May 21 23:52 testData/orig/ids/genome/infSRR1027187_1_genome_output.txt
-# ...
-# 
-#############################################################################
 
-# Change to WORK_DIR, then get all TXT files in WORK_DIR/[dataset_name] folder, tar them.
+os.chdir(MACH_OUTPUT_DIR)
 
-# os.chdir(WORK_DIR)
+with open(logfile, 'a') as ff:
+    ff.write('\n\n\nListing machete ouput directory\n\n\n')
+    subprocess.check_call(["ls", "-R"], stdout=ff)
+    ff.write('\n\n\nMasterError.txt should start here.\n\n\n')
 
+os.chdir(WORK_DIR)
+    
+fullpatholderrorfile = MACH_OUTPUT_DIR + "/MasterError.txt"
+if os.path.isfile(fullpatholderrorfile):
+    subprocess.check_call("cat " + fullpatholderrorfile + " >> " + logfile, shell=True)
+    
 
-# file_list = []
-# for root, subFolders, files in os.walk(dataset_name):
-#     for file in files:
-#         file_list.append(os.path.join(root,file))
-        
-# text_file_list = filter(lambda x:re.search('.txt$', x), file_list)
-
-# with open("tarlist", 'w') as ff:
-#      ff.write('\n'.join([str(x) for x in text_file_list]))
-
-# try:
-#     fullcall = "tar -cvzf " + dataset_name + "knifetextfiles.tar.gz -T tarlist -C " + datadirlocation
-#     subprocess.check_call(fullcall, shell=True)                                
-# except:
-#     with open(logfile, 'a') as ff:
-#         ff.write("\nError in tarring the knife text output files in the " + dataset_name + " directory\n")
-
-
-# Might want to get these??? Not sure what directory they are actually in, e.g.
-#    maybe in WORK_DIR/testData/taskIdFiles/???             
-# os.chdir(WORK_DIR)
-# try:
-#     subprocess.check_call("mv " + WORK_DIR+ "/taskIdFiles/*.txt" + " " + WORK_DIR, shell=True)
-# except:
-#     with open(logfile, 'a') as ff:
-#         ff.write('Error in moving taskIdFiles txt files.')
+#fullpathnewerrorfile = WORK_DIR + "/MasterError.txt"  zzxx
+#subprocess.check_call(["cp", fullpatholderrorfile, fullpathnewerrorfile])
